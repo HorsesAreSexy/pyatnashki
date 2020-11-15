@@ -18,6 +18,17 @@
       </div>
       <Number v-for="structObject in structure" :key="structObject.number" :data="structObject" @slide="onSlide" />
     </div>
+    <div v-show="won" id="animation" class="winscreen">
+      <div class="message">
+        <div class="text">
+          U spend <b>><span class="time">{{ finalTime }}</span>&#60;</b> minutes of ur life in this old sptupid game.
+          <div class="congartz">
+            Congratulations!
+          </div>
+        </div>
+        <img class="celestia" src="clap.gif">
+      </div>
+    </div>
   </div>
 </template>
 
@@ -42,14 +53,31 @@ export default {
     return {
       structure,
       count: 0,
-      time: '00:00'
+      time: '00:00',
+      finalTime: 0,
+      won: false
     }
   },
   mounted () {
     this.onSlide()
-    setInterval(this.tick, 1000)
+    this.ticking = setInterval(this.tick, 1000)
   },
   methods: {
+    win () {
+      clearInterval(this.ticking)
+      this.finalTime = Number(this.time.slice(0, 2))
+      this.won = true
+      const winScreen = document.getElementById('animation')
+      const duration = 4e2
+      winScreen.animate([
+        { opacity: 0 },
+        { opacity: 1 }
+      ], { duration })
+      winScreen.firstChild.animate([
+        { top: '100px' },
+        { top: '0px' }
+      ], { duration })
+    },
     tick () {
       const restrict = [9, 5, null, 9]
       const perDigit = this.time.split('').reverse()
@@ -76,7 +104,9 @@ export default {
         oldVoid.number = newVoid.number
         newVoid.number = null
         let check = 0
-        if (structure.slice(0, -1).every(({ number }) => ++check === number)) { alert('congratulations, u won') }
+        if (structure.slice(0, -1).every(({ number }) => ++check === number)) {
+          this.win()
+        }
       }
       for (const structObject of structure) {
         if (structObject.slide) {
@@ -197,6 +227,41 @@ export default {
     margin-top: -20px;
     text-align: center;
     width: 100%;
+  }
+}
+.winscreen{
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  z-index: 999;
+  .message{
+    margin: auto;
+    outline: 30px solid black;
+    width: 80%;
+    height: 300px;
+    position: relative;
+    background: white;
+    display: flex;
+    justify-content: space-between;
+    .text{
+      padding: 15px 30px;
+      font-size: 28px;
+      .time{
+        font-size: 36px;
+      }
+      .congartz{
+        font-size: 48px;
+        font-weight: bold;
+        line-height: 2;
+      }
+    }
+    .celestia{
+      height: 100%;
+      float: right;
+      border-left: 4px solid black;
+    }
   }
 }
 </style>
